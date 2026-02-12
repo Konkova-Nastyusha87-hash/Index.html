@@ -1,0 +1,64 @@
+<script>
+  const yesBtn = document.getElementById("yesBtn");
+  const noBtn  = document.getElementById("noBtn");
+  const hint   = document.getElementById("hint");
+  const mainCard = document.getElementById("mainCard");
+
+  const noMessages = [
+    "Are you sure?",
+    "Are you sure you are sure?",
+    "You better say yes.",
+    "Please.",
+    "Stop doing this. Just say yes."
+  ];
+
+  let noCount = 0;
+  let yesScale = 1;
+  let noScale  = 1;
+
+  noBtn.addEventListener("click", () => {
+    const msg = noMessages[Math.min(noCount, noMessages.length - 1)];
+    hint.textContent = msg;
+
+    yesScale += 0.22;
+    yesBtn.style.transform = `scale(${yesScale})`;
+
+    noScale -= 0.18;
+    if (noScale < 0.25) noScale = 0.25;
+    noBtn.style.transform = `scale(${noScale})`;
+
+    noCount++;
+
+    if (noCount >= 5) {
+      noBtn.style.opacity = "0.05";
+      noBtn.style.pointerEvents = "none";
+      noBtn.textContent = "";
+      yesBtn.classList.add("yes-wide");
+      yesBtn.style.transform = "scale(1)";
+    }
+  });
+
+  yesBtn.addEventListener("click", () => {
+    mainCard.innerHTML = `
+      <div class="img-wrap">
+        <img src="fireworks.gif" alt="Fireworks"/>
+      </div>
+
+      <div class="yay">YAYYY!!!!</div>
+
+      <div style="
+        margin-top: 14px;
+        text-align: center;
+        font-size: 18px;
+        line-height: 1.6;
+        color: #111;
+        white-space: pre-line;
+      ">14.02.2026
+
+Address: Moscow, 1st Krasnogvardeisky passage 21, page 2.
+Restaurant: Jamaa
+
+D. M.</div>
+    `;
+  });
+</script>
