@@ -1,296 +1,63 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Valentine</title>
-  <style>
-    :root{
-      --bg:#ffffff;
-      --text:#1a1a1a;
-      --muted:#6b6b6b;
-      --card:#ffffff;
-      --border:#eaeaea;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background:var(--bg);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-      color:var(--text);
-    }
-    .wrap{
-      width:min(520px, 92vw);
-      padding:24px 16px;
-      text-align:center;
-    }
-    .imgbox{
-      width: min(320px, 80vw);
-      aspect-ratio: 1 / 1;
-      margin: 0 auto 14px;
-      border:1px solid var(--border);
-      background:var(--card);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      overflow:hidden;
-    }
-    .imgbox img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      display:block;
-    }
-    .question{
-      font-size:16px;
-      margin: 12px 0 18px;
-      color: var(--muted);
-    }
-    .row{
-      display:flex;
-      gap:14px;
-      justify-content:center;
-      align-items:center;
-      flex-wrap:wrap;
-    }
-    button{
-      border:1px solid var(--border);
-      background:#fff;
-      color:#111;
-      padding:10px 18px;
-      border-radius:10px;
-      cursor:pointer;
-      font-size:16px;
-      transition: transform .12s ease, font-size .12s ease;
-      min-width:92px;
-    }
-    button:active{transform:scale(.98)}
-    #yesBtn{
-      font-weight:600;
-    }
-    #noBtn{
-      color:#333;
-    }
+<script>
+  const yesBtn = document.getElementById("yesBtn");
+  const noBtn  = document.getElementById("noBtn");
+  const hint   = document.getElementById("hint");
+  const mainCard = document.getElementById("mainCard");
 
-    /* big YES screen */
-    .bigYes{
-      font-size: clamp(56px, 12vw, 110px);
-      font-weight:800;
-      letter-spacing:1px;
-      margin: 18px 0 10px;
-      color:#111;
-    }
-    .sub{
-      font-size:14px;
-      color:var(--muted);
-      margin-bottom:14px;
-    }
+  const noMessages = [
+    "Are you sure?",
+    "Are you sure you are sure?",
+    "You better say yes.",
+    "Please.",
+    "Stop doing this. Just say yes."
+  ];
 
-    /* fireworks */
-    canvas{
-      width:min(320px, 80vw);
-      height:min(320px, 80vw);
-      border:1px solid var(--border);
-      display:none;
-      margin: 0 auto 10px;
-      background:#000;
-    }
-    .yay{
-      display:none;
-      font-size:20px;
-      font-weight:700;
-      letter-spacing:.5px;
-      margin-top:10px;
-    }
-  </style>
-</head>
-<body>
-  <div class="wrap">
+  let noCount = 0;
+  let yesScale = 1;
+  let noScale  = 1;
 
-    <div class="imgbox" id="imgbox">
-      <img id="mainImg" alt="pic" src="https://i.imgur.com/9z7sKQv.jpeg">
+  noBtn.addEventListener("click", () => {
+    const msg = noMessages[Math.min(noCount, noMessages.length - 1)];
+    hint.textContent = msg;
+
+    yesScale += 0.22;
+    yesBtn.style.transform = `scale(${yesScale})`;
+
+    noScale -= 0.18;
+    if (noScale < 0.25) noScale = 0.25;
+    noBtn.style.transform = `scale(${noScale})`;
+
+    noCount++;
+
+    if (noCount >= 5) {
+      noBtn.style.opacity = "0.05";
+      noBtn.style.pointerEvents = "none";
+      noBtn.textContent = "";
+      yesBtn.classList.add("yes-wide");
+      yesBtn.style.transform = "scale(1)";
+    }
+  });
+
+  yesBtn.addEventListener("click", () => {
+  mainCard.innerHTML = `
+    <div class="img-wrap">
+      <img src="fireworks.gif" alt="Fireworks"/>
     </div>
 
-    <canvas id="fx" width="600" height="600"></canvas>
+    <div class="yay">YAYYY!!!!</div>
 
-    <div class="question" id="question">Will you be my valentine?</div>
+    <div style="
+      margin-top: 14px;
+      text-align: center;
+      font-size: 18px;
+      line-height: 1.6;
+      color: #111;
+      white-space: pre-line;
+    ">14.02.2026
+20:00
+centrale bistro by Evgeny Vikentev (в этот раз он там точно должен быть)
 
-    <div class="row" id="buttons">
-      <button id="yesBtn">Yes</button>
-      <button id="noBtn">No</button>
-    </div>
-
-    <div class="yay" id="yay">YAYYY!!!</div>
-  </div>
-
-  <script>
-    // ========= EDIT TEXTS HERE LATER =========
-    const TEXT = {
-      question: "Will you be my valentine?",
-      yes: "Yes",
-      no: "No",
-      noSteps: [
-        "Are you sure?",
-        "Are you REALLY sure?",
-        "Please?",
-        "Don’t do this to me 😭",
-        "You better say yes",
-        "Last chance…",
-      ],
-      bigYesSub: "Click YES again 🙂",
-      yay: "Address: Moscow, 1st Krasnogvardeisky passage 21, page 2. Restaurant :Jamaa!!!"
-    };
-
-    // ========= IMAGES (replace with yours) =========
-    // 1) neutral, 2) holding heart, 3) sad, 4) (optional) another
-    const IMAGES = [
-      "https://i.postimg.cc/SxxJfDk6/IMG-3913.jpg", // neutral
-      "https://i.postimg.cc/50B4VCfH/IMG-3914.jpg", // heart
-      "https://i.postimg.cc/K81mYVZx/IMG-3915.jpg", // sad
-      "https://i.postimg.cc/wTGdnVhz/IMG-3917.jpg"  // fallback
-    ];
-
-    const mainImg = document.getElementById("mainImg");
-    const question = document.getElementById("question");
-    const yesBtn = document.getElementById("yesBtn");
-    const noBtn = document.getElementById("noBtn");
-    const buttons = document.getElementById("buttons");
-    const canvas = document.getElementById("fx");
-    const yay = document.getElementById("yay");
-    const imgbox = document.getElementById("imgbox");
-
-    // init
-    question.textContent = TEXT.question;
-    yesBtn.textContent = TEXT.yes;
-    noBtn.textContent = TEXT.no;
-    yay.textContent = TEXT.yay;
-
-    let noIndex = 0;
-    let yesStage = 0; // 0 = normal, 1 = big YES shown, 2 = fireworks
-
-    function setYesScale(n){
-      // n: 1.0 .. 2.2
-      yesBtn.style.transform = `scale(${n})`;
-      yesBtn.style.fontSize = `${16 + (n-1)*10}px`;
-      yesBtn.style.padding = `${10 + (n-1)*6}px ${18 + (n-1)*10}px`;
-    }
-
-    function showBigYes(){
-      yesStage = 1;
-      // replace question area with big YES
-      question.innerHTML = `
-        <div class="bigYes">${TEXT.yes}</div>
-        <div class="sub">${TEXT.bigYesSub}</div>
-      `;
-      // hide No button, keep Yes only
-      noBtn.style.display = "none";
-      setYesScale(1.2);
-      // show heart image
-      mainImg.src = IMAGES[1];
-    }
-
-    // ========== FIREWORKS ==========
-    const ctx = canvas.getContext("2d");
-    let particles = [];
-    let raf = null;
-
-    function rand(a,b){ return Math.random()*(b-a)+a; }
-
-    function spawnBurst(){
-      const cx = rand(180, 420);
-      const cy = rand(160, 360);
-      const count = 120;
-      for(let i=0;i<count;i++){
-        const ang = rand(0, Math.PI*2);
-        const spd = rand(2, 6);
-        particles.push({
-          x: cx, y: cy,
-          vx: Math.cos(ang)*spd,
-          vy: Math.sin(ang)*spd,
-          life: rand(40, 70),
-          r: rand(1.2, 2.6),
-          hue: rand(0, 360)
-        });
-      }
-    }
-
-    function tick(){
-      ctx.fillStyle = "rgba(0,0,0,0.18)";
-      ctx.fillRect(0,0,canvas.width,canvas.height);
-
-      for(let i=particles.length-1;i>=0;i--){
-        const p = particles[i];
-        p.x += p.vx;
-        p.y += p.vy;
-        p.vy += 0.06;       // gravity
-        p.vx *= 0.99;       // drag
-        p.vy *= 0.99;
-        p.life -= 1;
-
-        ctx.beginPath();
-        ctx.fillStyle = `hsla(${p.hue}, 90%, 60%, ${Math.max(p.life/70, 0)})`;
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
-        ctx.fill();
-
-        if(p.life <= 0) particles.splice(i,1);
-      }
-
-      if(particles.length < 20){
-        spawnBurst();
-      }
-
-      raf = requestAnimationFrame(tick);
-    }
-
-    function startFireworks(){
-      yesStage = 2;
-      // hide image box, show canvas
-      imgbox.style.display = "none";
-      canvas.style.display = "block";
-      yay.style.display = "block";
-      buttons.style.display = "none";
-      // start animation
-      ctx.fillStyle = "#000";
-      ctx.fillRect(0,0,canvas.width,canvas.height);
-      spawnBurst();
-      spawnBurst();
-      tick();
-    }
-
-    // ========== EVENTS ==========
-    noBtn.addEventListener("click", () => {
-      if(yesStage !== 0) return;
-
-      // change text like in the example
-      const stepText = TEXT.noSteps[Math.min(noIndex, TEXT.noSteps.length-1)];
-      // show the step text on the right like “Are you sure?” vibe
-      question.textContent = TEXT.question;
-
-      // Make No more "hopeless": shrink it & grow YES
-      const scale = Math.min(1 + (noIndex+1)*0.18, 2.2);
-      setYesScale(scale);
-
-      // swap image sometimes
-      if(noIndex % 2 === 0) mainImg.src = IMAGES[2];
-      else mainImg.src = IMAGES[1];
-
-      // Put the step text lightly (like a small hint near No)
-      noBtn.textContent = stepText;
-
-      noIndex++;
-    });
-
-    yesBtn.addEventListener("click", () => {
-      if(yesStage === 0){
-        showBigYes();
-      } else if(yesStage === 1){
-        startFireworks();
-      }
-    });
-  </script>
-</body>
-</html>
+D. M.</div>
+  `;
+});
+</script>
